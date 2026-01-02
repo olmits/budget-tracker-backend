@@ -1,0 +1,7 @@
+# Ignore git and local binaries
+.git
+bin/
+tmp/
+*.exe
+*.log
+.env
