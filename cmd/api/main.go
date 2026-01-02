@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/olmits/budget-tracker-backend/internal/handler"
 	"github.com/olmits/budget-tracker-backend/pkg/database"
 )
 
@@ -32,6 +33,9 @@ func main() {
 
 	fmt.Println("Successfully connected to PostgreSQL!")
 
+	// Initialize Handler
+	txHandler := &handler.TransactionHandler{DB: dbPool}
+
 	// 3. Initialize the Router (Gin)
 	r := gin.Default()
 
@@ -44,6 +48,7 @@ func main() {
 		}
 		c.JSON(http.StatusOK, gin.H{"status": "active", "database": "connected"})
 	})
+	r.POST("/api/v1/transactions", txHandler.CreateTransaction)
 
 	// 5. Start Server
 	port := os.Getenv("SERVER_PORT")
