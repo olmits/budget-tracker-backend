@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/olmits/budget-tracker-backend/internal/handler"
+	"github.com/olmits/budget-tracker-backend/internal/repository"
 	"github.com/olmits/budget-tracker-backend/pkg/database"
 )
 
@@ -33,14 +34,18 @@ func main() {
 
 	fmt.Println("Successfully connected to PostgreSQL!")
 
-	// Initialize Handler
-	txHandler := &handler.TransactionHandler{DB: dbPool}
+	// 3. Initialize the Repository layer
+	// We pass the DB pool into the concrete Postgres implementation
+	transactionRepo := &repository.PostgresTransactionRepo{DB: dbPool}
+
+	// 4. Initialize the Handler layer
+	txHandler := &handler.TransactionHandler{Repo: transactionRepo}
 	catHandler := &handler.CategoryHandler{DB: dbPool}
 
-	// 3. Initialize the Router (Gin)
+	// 5. Initialize the Router (Gin)
 	r := gin.Default()
 
-	// 4. Simple Health Check Endpoint (using the DB)
+	// 6. Simple Health Check Endpoint (using the DB)
 	r.GET("/health", func(c *gin.Context) {
 		// Ping the DB again to verify it's still alive
 		if err := dbPool.Ping(c.Request.Context()); err != nil {
@@ -58,24 +63,14 @@ func main() {
 	r.POST("/api/v1/categories", catHandler.CreateCategory)
 	r.GET("/api/v1/categories", catHandler.ListCategories)
 
-	// 5. Start Server
+	// 7. Start Server
 	port := os.Getenv("SERVER_PORT")
 	if port == "" {
 		port = ":8080"
 	}
 
-	// http.HandleFunc("/api/v1/health", func(w http.ResponseWriter, r *http.Request) {
-	// 	w.Header().Set("Content-Type", "application/json")
-	// 	w.WriteHeader(http.StatusOK)
-	// 	w.Write([]byte(`{"status":"active","system": "budget-tracker"}`))
-	// })
-
 	fmt.Printf("Starting server on port %s...\n", port)
 	if err := r.Run(port); err != nil {
 		log.Fatal(err)
 	}
-	// fmt.Printf("Starting server on port %s...\n", port)
-	// if err := http.ListenAndServe(port, nil); err != nil {
-	// 	log.Fatal(err)
-	// }
 }

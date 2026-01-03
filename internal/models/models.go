@@ -22,11 +22,12 @@ type Category struct {
 }
 
 type Transaction struct {
-	ID          uuid.UUID  `json:"id"`
-	UserId      uuid.UUID  `json:"user_id"`
-	CategoryId  *uuid.UUID `json:"category_id"` // Pointer because it can be null
-	Amount      int64      `json:"amount"`      // Cents
-	Description string     `json:"description"`
-	Date        time.Time  `json:"date"`
-	CreatedAt   time.Time  `json:"created_at"`
+	ID           uuid.UUID  `json:"id"`
+	UserId       uuid.UUID  `json:"user_id"`
+	CategoryId   *uuid.UUID `json:"category_id"` // Pointer because it can be null
+	CategoryName string     `json:"category_name,omitempty"`
+	Amount       int64      `json:"amount"` // Cents
+	Description  string     `json:"description"`
+	Date         time.Time  `json:"date"`
+	CreatedAt    time.Time  `json:"created_at"`
 }
