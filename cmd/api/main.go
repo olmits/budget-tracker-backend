@@ -35,6 +35,7 @@ func main() {
 
 	// Initialize Handler
 	txHandler := &handler.TransactionHandler{DB: dbPool}
+	catHandler := &handler.CategoryHandler{DB: dbPool}
 
 	// 3. Initialize the Router (Gin)
 	r := gin.Default()
@@ -48,8 +49,14 @@ func main() {
 		}
 		c.JSON(http.StatusOK, gin.H{"status": "active", "database": "connected"})
 	})
+
+	// Transaction Routes
 	r.POST("/api/v1/transactions", txHandler.CreateTransaction)
 	r.GET("/api/v1/transactions", txHandler.ListTransactions)
+
+	// Category Routes
+	r.POST("/api/v1/categories", catHandler.CreateCategory)
+	r.GET("/api/v1/categories", catHandler.ListCategories)
 
 	// 5. Start Server
 	port := os.Getenv("SERVER_PORT")
