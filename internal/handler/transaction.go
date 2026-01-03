@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -48,8 +47,6 @@ func (h *TransactionHandler) CreateTransaction(c *gin.Context) {
 		Description: req.Description,
 		Date:        req.Date,
 	}
-
-	fmt.Println(t)
 
 	// CALL THE INTERFACE
 	if err := h.Repo.CreateTransaction(c.Request.Context(), t); err != nil {
