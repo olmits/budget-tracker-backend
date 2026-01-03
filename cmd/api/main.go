@@ -37,10 +37,11 @@ func main() {
 	// 3. Initialize the Repository layer
 	// We pass the DB pool into the concrete Postgres implementation
 	transactionRepo := &repository.PostgresTransactionRepo{DB: dbPool}
+	categoryRepo := &repository.PostgresCategoryRepo{DB: dbPool}
 
 	// 4. Initialize the Handler layer
 	txHandler := &handler.TransactionHandler{Repo: transactionRepo}
-	catHandler := &handler.CategoryHandler{DB: dbPool}
+	catHandler := &handler.CategoryHandler{Repo: categoryRepo}
 
 	// 5. Initialize the Router (Gin)
 	r := gin.Default()

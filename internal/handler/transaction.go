@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -48,9 +49,12 @@ func (h *TransactionHandler) CreateTransaction(c *gin.Context) {
 		Date:        req.Date,
 	}
 
+	fmt.Println(t)
+
 	// CALL THE INTERFACE
 	if err := h.Repo.CreateTransaction(c.Request.Context(), t); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create transaction"})
+		return
 	}
 
 	// Return Success Response

@@ -3,15 +3,16 @@ package handler
 import (
 	"errors"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/olmits/budget-tracker-backend/internal/models"
+	"github.com/olmits/budget-tracker-backend/internal/repository"
 )
 
 type CategoryHandler struct {
-	DB *pgxpool.Pool
+	Repo repository.CategoryRepository
 }
 
 // Define the input JSON structure
@@ -30,78 +31,55 @@ func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 		return
 	}
 
-	// 2. Hardcode User ID (Temporary)
-	userID := "9e0058fe-21e5-413b-bd89-bda904e9ba8d"
-
-	// 3. Insert into DB
-	sql := `INSERT INTO categories (user_id, name, type)
-			VALUES ($1, $2, $3)
-			RETURNING id, created_at`
-
-	var id string
-	var createdAt time.Time
-
-	// Execute Query
-	err := h.DB.QueryRow(c.Request.Context(), sql, userID, req.Name, req.Type).Scan(&id, &createdAt)
-
+	// 2. TODO: In the future, get this ID from the Auth Token (JWT)
+	// For now, HARDCODE the ID you got from the database step above!
+	rawUserID := "9e0058fe-21e5-413b-bd89-bda904e9ba8d"
+	userID, err := uuid.Parse(rawUserID)
 	if err != nil {
-		// 1. Check if the error is a Postgres Error
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid User ID format"})
+		return
+	}
+
+	cat := &models.Category{
+		UserId: userID,
+		Name:   req.Name,
+		Type:   req.Type,
+	}
+
+	// 3. Call repository
+	if err := h.Repo.CreateCategory(c.Request.Context(), cat); err != nil {
+		// Check if the error is a Postgres Error
 		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			// 2. Check for Error Code "23505" (Unique Violation)
-			if pgErr.Code == "23505" {
-				c.JSON(http.StatusConflict, gin.H{
-					"error": "Category with this name already exists",
-				})
-				return
-			}
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			c.JSON(http.StatusConflict, gin.H{
+				"error": "Category with this name already exists",
+			})
+			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create category"})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"id":         id,
-		"name":       req.Name,
-		"type":       req.Type,
-		"created_at": createdAt,
-	})
+	c.JSON(http.StatusCreated, cat)
 }
 
 // GET /api/v1/categories
 func (h *CategoryHandler) ListCategories(c *gin.Context) {
-	userID := "9e0058fe-21e5-413b-bd89-bda904e9ba8d"
+	// 1. Hardcode UserID (Until we add Auth)
+	// We need to parse the string UUID into a real UUID object
+	rawUserID := "9e0058fe-21e5-413b-bd89-bda904e9ba8d"
+	userID, err := uuid.Parse(rawUserID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid User ID format"})
+		return
+	}
 
-	sql := `SELECT id, name, type FROM categories WHERE user_id = $1 ORDER BY name ASC`
-
-	rows, err := h.DB.Query(c.Request.Context(), sql, userID)
+	// 2. Call the Repository
+	categories, err := h.Repo.ListCategories(c.Request.Context(), userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch categories"})
 		return
 	}
-	defer rows.Close()
 
-	results := []map[string]string{}
-
-	// 1. Iterate
-	for rows.Next() {
-		var id, name, catType string
-		if err := rows.Scan(&id, &name, &catType); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Scanning error"})
-			return
-		}
-		results = append(results, map[string]string{
-			"id":   id,
-			"name": name,
-			"type": catType,
-		})
-	}
-
-	// 2. IMPORTANT: Check if the loop stopped because of an error
-	if err := rows.Err(); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database iteration error: " + err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"data": results})
+	c.JSON(http.StatusOK, gin.H{"data": categories})
 }

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -13,9 +14,10 @@ type PostgresTransactionRepo struct {
 }
 
 func (r *PostgresTransactionRepo) CreateTransaction(ctx context.Context, t *models.Transaction) error {
-	sql := `INSERT INTP transactions (user_id, amount, description, date, category_id)
+	sql := `INSERT INTO transactions (user_id, amount, description, date, category_id)
 			VALUES ($1, $2, $3, $4, $5)
 			RETURNING id, created_at`
+	fmt.Println(t)
 
 	return r.DB.QueryRow(ctx, sql,
 		t.UserId, t.Amount, t.Description, t.Date, t.CategoryId,
