@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/olmits/budget-tracker-backend/internal/handler"
+	"github.com/olmits/budget-tracker-backend/internal/middleware"
 	"github.com/olmits/budget-tracker-backend/internal/repository"
 	"github.com/olmits/budget-tracker-backend/pkg/database"
 )
@@ -45,6 +46,7 @@ func main() {
 
 	// 5. Initialize the Router (Gin)
 	r := gin.Default()
+	jwtSecret := os.Getenv("JWT_SECRET")
 
 	// 6. Simple Health Check Endpoint (using the DB)
 	r.GET("/health", func(c *gin.Context) {
@@ -56,13 +58,17 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"status": "active", "database": "connected"})
 	})
 
-	// Transaction Routes
-	r.POST("/api/v1/transactions", txHandler.CreateTransaction)
-	r.GET("/api/v1/transactions", txHandler.ListTransactions)
+	api := r.Group("/api/v1")
+	api.Use(middleware.AuthMiddleware(jwtSecret)) // <--- Apply Guard Here
+	{
+		// Transaction Routes
+		r.POST("/transactions", txHandler.CreateTransaction)
+		r.GET("/transactions", txHandler.ListTransactions)
 
-	// Category Routes
-	r.POST("/api/v1/categories", catHandler.CreateCategory)
-	r.GET("/api/v1/categories", catHandler.ListCategories)
+		// Category Routes
+		r.POST("/api/v1/categories", catHandler.CreateCategory)
+		r.GET("/api/v1/categories", catHandler.ListCategories)
+	}
 
 	// 7. Start Server
 	port := os.Getenv("SERVER_PORT")

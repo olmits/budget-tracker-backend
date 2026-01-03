@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/olmits/budget-tracker-backend/internal/middleware"
 	"github.com/olmits/budget-tracker-backend/internal/models"
 	"github.com/olmits/budget-tracker-backend/internal/repository"
 )
@@ -31,12 +31,9 @@ func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 		return
 	}
 
-	// 2. TODO: In the future, get this ID from the Auth Token (JWT)
-	// For now, HARDCODE the ID you got from the database step above!
-	rawUserID := "9e0058fe-21e5-413b-bd89-bda904e9ba8d"
-	userID, err := uuid.Parse(rawUserID)
+	userID, err := middleware.GetUserID(c) // "9e0058fe-21e5-413b-bd89-bda904e9ba8d"
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid User ID format"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
@@ -65,16 +62,12 @@ func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 
 // GET /api/v1/categories
 func (h *CategoryHandler) ListCategories(c *gin.Context) {
-	// 1. Hardcode UserID (Until we add Auth)
-	// We need to parse the string UUID into a real UUID object
-	rawUserID := "9e0058fe-21e5-413b-bd89-bda904e9ba8d"
-	userID, err := uuid.Parse(rawUserID)
+	userID, err := middleware.GetUserID(c) // "9e0058fe-21e5-413b-bd89-bda904e9ba8d"
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid User ID format"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
-	// 2. Call the Repository
 	categories, err := h.Repo.ListCategories(c.Request.Context(), userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch categories"})

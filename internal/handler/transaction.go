@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
+	"github.com/olmits/budget-tracker-backend/internal/middleware"
 	"github.com/olmits/budget-tracker-backend/internal/models"
 	"github.com/olmits/budget-tracker-backend/internal/repository"
 )
@@ -31,12 +31,9 @@ func (h *TransactionHandler) CreateTransaction(c *gin.Context) {
 		return
 	}
 
-	// 2. TODO: In the future, get this ID from the Auth Token (JWT)
-	// For now, HARDCODE the ID you got from the database step above!
-	rawUserID := "9e0058fe-21e5-413b-bd89-bda904e9ba8d"
-	userID, err := uuid.Parse(rawUserID)
+	userID, err := middleware.GetUserID(c) // "9e0058fe-21e5-413b-bd89-bda904e9ba8d"
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid User ID format"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
@@ -64,12 +61,9 @@ func (h *TransactionHandler) CreateTransaction(c *gin.Context) {
 
 // GET /api/v1/transactions
 func (h *TransactionHandler) ListTransactions(c *gin.Context) {
-	// 1. Hardcode UserID (Until we add Auth)
-	// We need to parse the string UUID into a real UUID object
-	rawUserID := "9e0058fe-21e5-413b-bd89-bda904e9ba8d"
-	userID, err := uuid.Parse(rawUserID)
+	userID, err := middleware.GetUserID(c) // "9e0058fe-21e5-413b-bd89-bda904e9ba8d"
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid User ID format"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
