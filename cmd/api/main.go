@@ -62,12 +62,12 @@ func main() {
 	api.Use(middleware.AuthMiddleware(jwtSecret)) // <--- Apply Guard Here
 	{
 		// Transaction Routes
-		r.POST("/transactions", txHandler.CreateTransaction)
-		r.GET("/transactions", txHandler.ListTransactions)
+		api.POST("/transactions", txHandler.CreateTransaction)
+		api.GET("/transactions", txHandler.ListTransactions)
 
 		// Category Routes
-		r.POST("/api/v1/categories", catHandler.CreateCategory)
-		r.GET("/api/v1/categories", catHandler.ListCategories)
+		api.POST("/categories", catHandler.CreateCategory)
+		api.GET("/categories", catHandler.ListCategories)
 	}
 
 	// 7. Start Server
