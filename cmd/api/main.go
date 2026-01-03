@@ -49,6 +49,7 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"status": "active", "database": "connected"})
 	})
 	r.POST("/api/v1/transactions", txHandler.CreateTransaction)
+	r.GET("/api/v1/transactions", txHandler.ListTransactions)
 
 	// 5. Start Server
 	port := os.Getenv("SERVER_PORT")
