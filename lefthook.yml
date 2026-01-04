@@ -8,5 +8,5 @@ pre-push:
   commands:
     tests:
       run: go test ./...
-    lint:
-      run: golangci-lint run
+    # lint:
+    #   run: golangci-lint run

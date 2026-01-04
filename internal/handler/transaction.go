@@ -51,7 +51,6 @@ func (h *TransactionHandler) CreateTransaction(c *gin.Context) {
 		return
 	}
 
-	// Return Success Response
 	c.JSON(http.StatusCreated, gin.H{
 		"id":         t.ID,
 		"status":     "created",
