@@ -1,0 +1,12 @@
+# EXAMPLE USAGE:
+#
+#   Refer for explanation to following link:
+#   https://lefthook.dev/configuration/
+#
+pre-push:
+  parallel: true
+  commands:
+    tests:
+      run: go test ./...
+    lint:
+      run: golangci-lint run

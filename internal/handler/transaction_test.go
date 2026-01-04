@@ -44,20 +44,24 @@ func TestCreateTransaction(t *testing.T) {
 		// A. Arrange (Setup)
 		mockRepo := new(MockTransactionRepo)
 
+		dummyUserID := uuid.New()
+
 		// Expect CreateTransaction to be called once, return NO error (nil)
 		mockRepo.On("CreateTransaction", mock.Anything, mock.Anything).Return(nil)
 
 		// Create Handler with the Mock
 		h := &TransactionHandler{Repo: mockRepo}
+		r := gin.Default()
+		r.Use(func(ctx *gin.Context) {
+			ctx.Set("userID", dummyUserID)
+			ctx.Next()
+		})
+		r.POST("/api/v1/transactions", h.CreateTransaction)
 
 		// Create a Request
 		w := httptest.NewRecorder()
 		jsonBody := []byte(`{"amount": 1000, "date": "2023-10-27T10:00:00Z", "description": "Test"}`)
 		req, _ := http.NewRequest("POST", "/api/v1/transactions", bytes.NewBuffer(jsonBody))
-
-		// Setup Router
-		r := gin.Default()
-		r.POST("/api/v1/transactions", h.CreateTransaction)
 
 		// B. Act (Run)
 		r.ServeHTTP(w, req)
@@ -73,20 +77,24 @@ func TestCreateTransaction(t *testing.T) {
 		// A. Arrange (Setup)
 		mockRepo := new(MockTransactionRepo)
 
+		dummyUserID := uuid.New()
+
 		// Expect it to be called, but return an error this time
 		mockRepo.On("CreateTransaction", mock.Anything, mock.Anything).Return(errors.New("db connection lost"))
 
 		// Create Handler with the Mock
 		h := &TransactionHandler{Repo: mockRepo}
+		r := gin.Default()
+		r.Use(func(ctx *gin.Context) {
+			ctx.Set("userID", dummyUserID)
+			ctx.Next()
+		})
+		r.POST("/api/v1/transactions", h.CreateTransaction)
 
 		// Create a Request
 		w := httptest.NewRecorder()
 		jsonBody := []byte(`{"amount": 1000, "date": "2023-10-27T10:00:00Z", "description": "Test"}`)
 		req, _ := http.NewRequest("POST", "/api/v1/transactions", bytes.NewBuffer(jsonBody))
-
-		// Setup Router
-		r := gin.Default()
-		r.POST("/api/v1/transactions", h.CreateTransaction)
 
 		// B. Act (Run)
 		r.ServeHTTP(w, req)
@@ -105,6 +113,7 @@ func TestListTransactions(t *testing.T) {
 		mockRepo := new(MockTransactionRepo)
 
 		// Create some dummy data to return
+		dummyUserID := uuid.New()
 		dummyID := uuid.New()
 		dummyTransactions := []*models.Transaction{
 			{
@@ -118,14 +127,17 @@ func TestListTransactions(t *testing.T) {
 		// Expect ListTransactions to be called with ANY UserID
 		mockRepo.On("ListTransactions", mock.Anything, mock.Anything).Return(dummyTransactions, nil)
 
-		// Create Handler with the Mock
 		h := &TransactionHandler{Repo: mockRepo}
+		r := gin.Default()
+
+		r.Use(func(ctx *gin.Context) {
+			ctx.Set("userID", dummyUserID)
+			ctx.Next()
+		})
+		r.GET("/api/v1/transactions", h.ListTransactions)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", "/api/v1/transactions", nil)
-
-		r := gin.Default()
-		r.GET("/api/v1/transactions", h.ListTransactions)
 
 		// B. Act
 		r.ServeHTTP(w, req)
@@ -145,16 +157,22 @@ func TestListTransactions(t *testing.T) {
 		// A. Arrange
 		mockRepo := new(MockTransactionRepo)
 
+		dummyUserID := uuid.New()
+
 		// Expect it to fail
 		mockRepo.On("ListTransactions", mock.Anything, mock.Anything).Return(nil, errors.New("db disconnected"))
 
 		h := &TransactionHandler{Repo: mockRepo}
+		r := gin.Default()
+
+		r.Use(func(ctx *gin.Context) {
+			ctx.Set("userID", dummyUserID)
+			ctx.Next()
+		})
+		r.GET("/api/v1/transactions", h.ListTransactions)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", "/api/v1/transactions", nil)
-
-		r := gin.Default()
-		r.GET("/api/v1/transactions", h.ListTransactions)
 
 		// B. Act
 		r.ServeHTTP(w, req)

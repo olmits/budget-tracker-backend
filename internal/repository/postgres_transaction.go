@@ -64,6 +64,7 @@ func (r *PostgresTransactionRepo) ListTransactions(ctx context.Context, userID u
 			t.CategoryName = *catName
 		}
 
+		t.UserId = userID
 		transactions = append(transactions, t)
 	}
 

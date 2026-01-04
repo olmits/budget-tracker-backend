@@ -40,14 +40,19 @@ func TestCreateCategory(t *testing.T) {
 		mockRepo := new(MockCategoryRepo)
 		mockRepo.On("CreateCategory", mock.Anything, mock.Anything).Return(nil)
 
+		dummyUserID := uuid.New()
+
 		h := &CategoryHandler{Repo: mockRepo}
+		r := gin.Default()
+		r.Use(func(ctx *gin.Context) {
+			ctx.Set("userID", dummyUserID)
+			ctx.Next()
+		})
+		r.POST("/api/v1/categories", h.CreateCategory)
 
 		w := httptest.NewRecorder()
 		jsonBody := []byte(`{"name": "Fun", "type": "expense"}`)
 		req, _ := http.NewRequest("POST", "/api/v1/categories", bytes.NewBuffer(jsonBody))
-
-		r := gin.Default()
-		r.POST("/api/v1/categories", h.CreateCategory)
 
 		r.ServeHTTP(w, req)
 
@@ -63,13 +68,19 @@ func TestCreateCategory(t *testing.T) {
 
 		mockRepo.On("CreateCategory", mock.Anything, mock.Anything).Return(pgErr)
 
+		dummyUserID := uuid.New()
+
 		h := &CategoryHandler{Repo: mockRepo}
+		r := gin.Default()
+		r.Use(func(ctx *gin.Context) {
+			ctx.Set("userID", dummyUserID)
+			ctx.Next()
+		})
+		r.POST("/api/v1/categories", h.CreateCategory)
+
 		w := httptest.NewRecorder()
 		jsonBody := []byte(`{"name": "Fun", "type": "expense"}`)
 		req, _ := http.NewRequest("POST", "/api/v1/categories", bytes.NewBuffer(jsonBody))
-
-		r := gin.Default()
-		r.POST("/api/v1/categories", h.CreateCategory)
 
 		r.ServeHTTP(w, req)
 
@@ -88,11 +99,16 @@ func TestListCategories(t *testing.T) {
 			{Name: "Salary", Type: "income"},
 			{Name: "Rent", Type: "expense"},
 		}
+		dummyUserID := uuid.New()
 
 		mockRepo.On("ListCategories", mock.Anything, mock.Anything).Return(dummyList, nil)
 
 		h := &CategoryHandler{Repo: mockRepo}
 		r := gin.Default()
+		r.Use(func(ctx *gin.Context) {
+			ctx.Set("userID", dummyUserID)
+			ctx.Next()
+		})
 		r.GET("/api/v1/categories", h.ListCategories)
 
 		w := httptest.NewRecorder()
