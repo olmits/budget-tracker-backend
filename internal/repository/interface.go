@@ -17,3 +17,8 @@ type CategoryRepository interface {
 	CreateCategory(ctx context.Context, c *models.Category) error
 	ListCategories(ctx context.Context, userID uuid.UUID) ([]*models.Category, error)
 }
+
+type UserRepository interface {
+	CreateUser(ctx context.Context, user *models.User) error
+	GetUserByEmail(ctx context.Context, email string) (*models.User, error)
+}

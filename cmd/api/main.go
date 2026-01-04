@@ -39,16 +39,19 @@ func main() {
 	// We pass the DB pool into the concrete Postgres implementation
 	transactionRepo := &repository.PostgresTransactionRepo{DB: dbPool}
 	categoryRepo := &repository.PostgresCategoryRepo{DB: dbPool}
+	userRepo := &repository.PostgresUserRepo{DB: dbPool}
 
 	// 4. Initialize the Handler layer
 	txHandler := &handler.TransactionHandler{Repo: transactionRepo}
 	catHandler := &handler.CategoryHandler{Repo: categoryRepo}
+	userHandler := &handler.UserHandler{Repo: userRepo}
 
 	// 5. Initialize the Router (Gin)
 	r := gin.Default()
 	jwtSecret := os.Getenv("JWT_SECRET")
 
-	// 6. Simple Health Check Endpoint (using the DB)
+	// 6. PUBLIC ROUTES (No Auth Middleware!)
+	// These must be accessible to everyone
 	r.GET("/health", func(c *gin.Context) {
 		// Ping the DB again to verify it's still alive
 		if err := dbPool.Ping(c.Request.Context()); err != nil {
@@ -57,6 +60,8 @@ func main() {
 		}
 		c.JSON(http.StatusOK, gin.H{"status": "active", "database": "connected"})
 	})
+	r.POST("/register", userHandler.Register)
+	r.POST("/login", userHandler.Login)
 
 	api := r.Group("/api/v1")
 	api.Use(middleware.AuthMiddleware(jwtSecret)) // <--- Apply Guard Here
