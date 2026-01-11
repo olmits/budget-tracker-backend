@@ -11,6 +11,7 @@ import (
 type TransactionRepository interface {
 	CreateTransaction(ctx context.Context, t *models.Transaction) error
 	ListTransactions(ctx context.Context, userID uuid.UUID) ([]*models.Transaction, error)
+	GetSummaryByType(ctx context.Context, userID uuid.UUID) (map[string]int64, error)
 }
 
 type CategoryRepository interface {

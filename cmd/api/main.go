@@ -10,6 +10,7 @@ import (
 	"github.com/olmits/budget-tracker-backend/internal/handler"
 	"github.com/olmits/budget-tracker-backend/internal/middleware"
 	"github.com/olmits/budget-tracker-backend/internal/repository"
+	"github.com/olmits/budget-tracker-backend/internal/service"
 	"github.com/olmits/budget-tracker-backend/pkg/database"
 )
 
@@ -41,8 +42,13 @@ func main() {
 	categoryRepo := &repository.PostgresCategoryRepo{DB: dbPool}
 	userRepo := &repository.PostgresUserRepo{DB: dbPool}
 
+	dashboardService := &service.DashboardService{Repo: transactionRepo}
+
 	// 4. Initialize the Handler layer
-	txHandler := &handler.TransactionHandler{Repo: transactionRepo}
+	txHandler := &handler.TransactionHandler{
+		Repo:    transactionRepo,
+		Service: dashboardService,
+	}
 	catHandler := &handler.CategoryHandler{Repo: categoryRepo}
 	userHandler := &handler.UserHandler{Repo: userRepo}
 
@@ -69,6 +75,8 @@ func main() {
 		// Transaction Routes
 		api.POST("/transactions", txHandler.CreateTransaction)
 		api.GET("/transactions", txHandler.ListTransactions)
+
+		api.GET("/dashboard", txHandler.GetDashboard)
 
 		// Category Routes
 		api.POST("/categories", catHandler.CreateCategory)

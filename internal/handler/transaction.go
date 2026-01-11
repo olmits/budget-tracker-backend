@@ -8,6 +8,7 @@ import (
 	"github.com/olmits/budget-tracker-backend/internal/middleware"
 	"github.com/olmits/budget-tracker-backend/internal/models"
 	"github.com/olmits/budget-tracker-backend/internal/repository"
+	"github.com/olmits/budget-tracker-backend/internal/service"
 )
 
 type CreateTransactionRequest struct {
@@ -18,7 +19,8 @@ type CreateTransactionRequest struct {
 }
 
 type TransactionHandler struct {
-	Repo repository.TransactionRepository
+	Repo    repository.TransactionRepository
+	Service *service.DashboardService
 }
 
 // POST /api/v1/transactions
@@ -76,4 +78,21 @@ func (h *TransactionHandler) ListTransactions(c *gin.Context) {
 
 	// 3. Return JSON
 	c.JSON(http.StatusOK, gin.H{"data": transactions})
+}
+
+// GET /api/v1/dashboard
+func (h *TransactionHandler) GetDashboard(c *gin.Context) {
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	summary, err := h.Service.GetUserSummary(c.Request.Context(), userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate dashboard"})
+		return
+	}
+
+	c.JSON(http.StatusOK, summary)
 }

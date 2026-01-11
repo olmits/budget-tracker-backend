@@ -36,6 +36,14 @@ func (m *MockTransactionRepo) ListTransactions(ctx context.Context, userID uuid.
 	return args.Get(0).([]*models.Transaction), args.Error(1)
 }
 
+func (m *MockTransactionRepo) GetSummaryByType(ctx context.Context, userID uuid.UUID) (map[string]int64, error) {
+	args := m.Called(ctx, userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(map[string]int64), args.Error(1)
+}
+
 func TestCreateTransaction(t *testing.T) {
 	// Setup Gin to Test Mode (quieter logs)
 	gin.SetMode(gin.TestMode)

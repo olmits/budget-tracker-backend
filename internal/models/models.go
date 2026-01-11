@@ -31,3 +31,9 @@ type Transaction struct {
 	Date         time.Time  `json:"date"`
 	CreatedAt    time.Time  `json:"created_at"`
 }
+
+type DashboardSummary struct {
+	TotalIncome  int64 `json:"total_income"`
+	TotalExpense int64 `json:"total_expense"`
+	NetBalance   int64 `json:"net_balance"`
+}

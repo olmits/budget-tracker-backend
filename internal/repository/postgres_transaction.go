@@ -74,3 +74,32 @@ func (r *PostgresTransactionRepo) ListTransactions(ctx context.Context, userID u
 
 	return transactions, nil
 }
+
+func (r *PostgresTransactionRepo) GetSummaryByType(ctx context.Context, userID uuid.UUID) (map[string]int64, error) {
+	sql := `SELECT
+				c.type, COALENSCE(SUM(t.amount), 0)
+				FROM transactions t
+				JOIN categories c ON t.category_id = c.id
+				WHERE t.user_id = $1
+				GROUP BY c.type
+	`
+
+	rows, err := r.DB.Query(ctx, sql, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	results := make(map[string]int64)
+
+	for rows.Next() {
+		var typeName string
+		var total int64
+		if err := rows.Scan(&typeName, &total); err != nil {
+			return nil, err
+		}
+		results[typeName] = total
+	}
+
+	return results, nil
+}
