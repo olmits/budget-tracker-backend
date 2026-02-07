@@ -77,7 +77,7 @@ func (r *PostgresTransactionRepo) ListTransactions(ctx context.Context, userID u
 
 func (r *PostgresTransactionRepo) GetSummaryByType(ctx context.Context, userID uuid.UUID) (map[string]int64, error) {
 	sql := `SELECT
-				c.type, COALENSCE(SUM(t.amount), 0)
+				c.type, COALESCE(SUM(t.amount), 0)
 				FROM transactions t
 				JOIN categories c ON t.category_id = c.id
 				WHERE t.user_id = $1
