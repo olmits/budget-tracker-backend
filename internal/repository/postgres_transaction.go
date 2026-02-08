@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -85,6 +86,7 @@ func (r *PostgresTransactionRepo) GetSummaryByType(ctx context.Context, userID u
 	`
 
 	rows, err := r.DB.Query(ctx, sql, userID)
+	fmt.Println(rows)
 	if err != nil {
 		return nil, err
 	}
@@ -92,12 +94,15 @@ func (r *PostgresTransactionRepo) GetSummaryByType(ctx context.Context, userID u
 
 	results := make(map[string]int64)
 
+	fmt.Printf("-----> 1 %v", userID)
 	for rows.Next() {
+		fmt.Println("-----> 2")
 		var typeName string
 		var total int64
 		if err := rows.Scan(&typeName, &total); err != nil {
 			return nil, err
 		}
+		fmt.Printf("-----> %v and %v", typeName, total)
 		results[typeName] = total
 	}
 

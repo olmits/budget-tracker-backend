@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/olmits/budget-tracker-backend/internal/models"
@@ -17,6 +18,7 @@ func (s *DashboardService) GetUserSummary(ctx context.Context, userID uuid.UUID)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(sums)
 
 	income := sums["income"]
 	expense := sums["expense"]

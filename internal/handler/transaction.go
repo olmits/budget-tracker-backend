@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/olmits/budget-tracker-backend/internal/middleware"
 	"github.com/olmits/budget-tracker-backend/internal/models"
 	"github.com/olmits/budget-tracker-backend/internal/repository"
@@ -15,7 +16,7 @@ type CreateTransactionRequest struct {
 	Amount      int64     `json:"amount" binding:"required"` // In cents!
 	Description string    `json:"description"`
 	Date        time.Time `json:"date" binding:"required"`
-	CategoryId  *string   `json:"category_id"` // Optional
+	CategoryID  string    `json:"category_id" binding:"required"`
 }
 
 type TransactionHandler struct {
@@ -39,10 +40,17 @@ func (h *TransactionHandler) CreateTransaction(c *gin.Context) {
 		return
 	}
 
+	categoryID, err := uuid.Parse(req.CategoryID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Category ID format"})
+		return
+	}
+
 	// Map Request to Model
 	t := &models.Transaction{
 		UserId:      userID,
 		Amount:      req.Amount,
+		CategoryId:  &categoryID,
 		Description: req.Description,
 		Date:        req.Date,
 	}
