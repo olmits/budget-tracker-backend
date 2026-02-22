@@ -51,7 +51,7 @@ func RunMigrations(dsn string) {
 	}
 
 	if err != nil {
-		log.Fatalf("❌ Migration initialization failed: %w", err)
+		log.Fatalf("❌ Migration initialization failed: %v", err)
 	}
 
 	if err := m.Up(); err != nil {
