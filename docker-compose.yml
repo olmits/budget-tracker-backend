@@ -4,6 +4,10 @@ services:
   # Your Go Application
   api:
     build: .
+    # volumes:
+    #   - .:/app          # Mounts your whole project to /app
+    #   - ./migrations:/app/migrations # Explicitly mount migrations
+    # working_dir: /app   # Ensures the app runs where the files are
     ports:
       - "8080:8080"
     environment:

@@ -18,13 +18,18 @@ COPY . .
 # ./cmd/api: Location of main.go
 RUN go build -o main ./cmd/api
 
+RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/api
+
 # Stage 2: Run the application
 FROM alpine:latest
+WORKDIR /root
 
-WORKDIR /root/
+# Install ca-certificates (usually needed for HTTPS/External APIs)
+RUN apk --no-cache add ca-certificates
 
 # Copy the binary from the builder stage
 COPY --from=builder /app/main .
+COPY --from=builder /app/migrations ./migrations
 
 # Expose the port the app runs on
 EXPOSE 8080
