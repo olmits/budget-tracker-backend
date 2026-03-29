@@ -117,7 +117,7 @@ func (r *PostgresTransactionRepo) GetPeriodicStats(ctx context.Context, userID u
 			LEFT JOIN categories c ON t.category_id = c.id
 			WHERE t.user_id = $1
 			GROUP by period
-			ORDER BY period DESC`
+			ORDER BY period ASC`
 
 	rows, err := r.DB.Query(ctx, sql, userID)
 	if err != nil {
