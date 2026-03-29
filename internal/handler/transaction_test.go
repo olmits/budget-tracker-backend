@@ -42,6 +42,10 @@ func (m *MockTransactionRepo) GetSummaryByType(ctx context.Context, userID uuid.
 	return args.Get(0).(map[string]int64), args.Error(1)
 }
 
+func (m *MockTransactionRepo) GetPeriodicStats(ctx context.Context, userID uuid.UUID) ([]*models.PeriodicStat, error) {
+	return nil, nil // Not used in this test
+}
+
 func TestCreateTransaction(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 

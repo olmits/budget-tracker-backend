@@ -78,11 +78,11 @@ func (r *PostgresTransactionRepo) ListTransactions(ctx context.Context, userID u
 
 func (r *PostgresTransactionRepo) GetSummaryByType(ctx context.Context, userID uuid.UUID) (map[string]int64, error) {
 	sql := `SELECT
-				c.type, COALESCE(SUM(t.amount), 0)
-				FROM transactions t
-				JOIN categories c ON t.category_id = c.id
-				WHERE t.user_id = $1
-				GROUP BY c.type
+					c.type, COALESCE(SUM(t.amount), 0)
+			FROM transactions t
+			JOIN categories c ON t.category_id = c.id
+			WHERE t.user_id = $1
+			GROUP BY c.type
 	`
 
 	rows, err := r.DB.Query(ctx, sql, userID)
@@ -94,7 +94,6 @@ func (r *PostgresTransactionRepo) GetSummaryByType(ctx context.Context, userID u
 
 	results := make(map[string]int64)
 
-	fmt.Printf("-----> 1 %v", userID)
 	for rows.Next() {
 		fmt.Println("-----> 2")
 		var typeName string
@@ -107,4 +106,44 @@ func (r *PostgresTransactionRepo) GetSummaryByType(ctx context.Context, userID u
 	}
 
 	return results, nil
+}
+
+func (r *PostgresTransactionRepo) GetPeriodicStats(ctx context.Context, userID uuid.UUID) ([]*models.PeriodicStat, error) {
+	sql := `SELECT
+					TO_CHAR(DATE_TRUNC('month', t.date), 'YYYY-MM-DD') as period,
+					COALESCE(SUM(CASE WHEN c.type = 'income' THEN amount ELSE 0 END), 0)::bigint as income,
+                	COALESCE(SUM(CASE WHEN c.type = 'expense' THEN amount ELSE 0 END), 0)::bigint as expense
+			FROM transactions t
+			LEFT JOIN categories c ON t.category_id = c.id
+			WHERE t.user_id = $1
+			GROUP by period
+			ORDER BY period DESC`
+
+	rows, err := r.DB.Query(ctx, sql, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var statsByPeriods []*models.PeriodicStat
+
+	for rows.Next() {
+		s := &models.PeriodicStat{}
+
+		if err := rows.Scan(
+			&s.Period,
+			&s.Income,
+			&s.Expense,
+		); err != nil {
+			return nil, err
+		}
+
+		statsByPeriods = append(statsByPeriods, s)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return statsByPeriods, nil
 }

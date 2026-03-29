@@ -32,6 +32,12 @@ type Transaction struct {
 	CreatedAt    time.Time  `json:"created_at"`
 }
 
+type PeriodicStat struct {
+	Period  string `json:"period"`
+	Expense int64  `json:"expense"`
+	Income  int64  `json:"income"`
+}
+
 type DashboardSummary struct {
 	TotalIncome  int64 `json:"total_income"`
 	TotalExpense int64 `json:"total_expense"`

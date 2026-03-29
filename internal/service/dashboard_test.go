@@ -29,6 +29,9 @@ func (m *MockRepo) CreateTransaction(ctx context.Context, t *models.Transaction)
 func (m *MockRepo) ListTransactions(ctx context.Context, userID uuid.UUID) ([]*models.Transaction, error) {
 	return nil, nil // Not used in this test
 }
+func (m *MockRepo) GetPeriodicStats(ctx context.Context, userID uuid.UUID) ([]*models.PeriodicStat, error) {
+	return nil, nil // Not used in this test
+}
 
 func TestGetUserDashboard(t *testing.T) {
 	t.Run("Calculates Balance Correctly", func(t *testing.T) {

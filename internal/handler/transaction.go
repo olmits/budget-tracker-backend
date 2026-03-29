@@ -70,13 +70,12 @@ func (h *TransactionHandler) CreateTransaction(c *gin.Context) {
 
 // GET /api/v1/transactions
 func (h *TransactionHandler) ListTransactions(c *gin.Context) {
-	userID, err := middleware.GetUserID(c) // "9e0058fe-21e5-413b-bd89-bda904e9ba8d"
+	userID, err := middleware.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
-	// 2. Call the Repository
 	transactions, err := h.Repo.ListTransactions(c.Request.Context(), userID)
 	if err != nil {
 		// Log the error internally here if you have a logger
@@ -84,7 +83,6 @@ func (h *TransactionHandler) ListTransactions(c *gin.Context) {
 		return
 	}
 
-	// 3. Return JSON
 	c.JSON(http.StatusOK, gin.H{"data": transactions})
 }
 
@@ -103,4 +101,20 @@ func (h *TransactionHandler) GetDashboard(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, summary)
+}
+
+func (h *TransactionHandler) GetPeriodicStats(c *gin.Context) {
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	stats, err := h.Repo.GetPeriodicStats(c.Request.Context(), userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch stats"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": stats})
 }

@@ -12,6 +12,7 @@ type TransactionRepository interface {
 	CreateTransaction(ctx context.Context, t *models.Transaction) error
 	ListTransactions(ctx context.Context, userID uuid.UUID) ([]*models.Transaction, error)
 	GetSummaryByType(ctx context.Context, userID uuid.UUID) (map[string]int64, error)
+	GetPeriodicStats(ctx context.Context, userID uuid.UUID) ([]*models.PeriodicStat, error)
 }
 
 type CategoryRepository interface {

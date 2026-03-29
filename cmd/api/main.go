@@ -76,6 +76,7 @@ func main() {
 	api.Use(middleware.AuthMiddleware(jwtSecret)) // <--- Apply Guard Here
 	{
 		// Transaction Routes
+		api.GET("/transactions/stats", txHandler.GetPeriodicStats)
 		api.POST("/transactions", txHandler.CreateTransaction)
 		api.GET("/transactions", txHandler.ListTransactions)
 
