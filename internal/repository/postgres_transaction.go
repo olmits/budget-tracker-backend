@@ -27,10 +27,16 @@ func (r *PostgresTransactionRepo) ListTransactions(ctx context.Context, userID u
 	// 1. Define the SQL
 	// We use LEFT JOIN to fetch the Category Name if it exists
 	sql := `SELECT
-					t.id, t.amount, t.description, t.date, t.created_at,
-					t.category_id, c.name as category_name
+					t.id,
+					t.amount,
+					t.description,
+					t.date,
+					t.created_at,
+					t.category_id,
+					c.name as category_name,
+            		c.type as type
 			FROM transactions t
-			LEFT JOIN categories c ON t.category_id = c.id
+			INNER JOIN categories c ON t.category_id = c.id
 			WHERE t.user_id = $1
 			ORDER BY t.date DESC`
 	// 2. Execute Query
@@ -45,7 +51,6 @@ func (r *PostgresTransactionRepo) ListTransactions(ctx context.Context, userID u
 
 	for rows.Next() {
 		t := &models.Transaction{}
-		var catName *string // Handle NULL category name
 
 		// Scan into the struct fields
 		if err := rows.Scan(
@@ -55,14 +60,10 @@ func (r *PostgresTransactionRepo) ListTransactions(ctx context.Context, userID u
 			&t.Date,
 			&t.CreatedAt,
 			&t.CategoryId,
-			&catName,
+			&t.CategoryName,
+			&t.Type,
 		); err != nil {
 			return nil, err
-		}
-
-		// Handle the pointer logic for category name
-		if catName != nil {
-			t.CategoryName = *catName
 		}
 
 		t.UserId = userID
